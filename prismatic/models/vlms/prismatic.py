@@ -17,7 +17,6 @@ from typing import Callable, Dict, List, Optional, Type, Union
 
 import torch
 from PIL import Image
-from torch.distributed.fsdp.wrap import _module_wrap_policy, _or_policy
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
 from prismatic.models.backbones.llm import LLMBackbone
@@ -284,6 +283,9 @@ class PrismaticVLM(VLM):
 
     def get_fsdp_wrapping_policy(self) -> Callable:
         """Return an FSDP _or_policy over the policies returned by each individual backbone (and our VLM policy)."""
+        # Lazy: NVIDIA's Jetson torch wheel omits torch.distributed.
+        from torch.distributed.fsdp.wrap import _module_wrap_policy, _or_policy
+
         vision_fsdp_wrapping_policy = self.vision_backbone.get_fsdp_wrapping_policy()
         llm_fsdp_wrapping_policy = self.llm_backbone.get_fsdp_wrapping_policy()
 

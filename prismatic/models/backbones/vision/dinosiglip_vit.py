@@ -12,7 +12,6 @@ import timm
 import torch
 from PIL import Image
 from timm.models.vision_transformer import Block, VisionTransformer
-from torch.distributed.fsdp.wrap import _module_wrap_policy, _or_policy, transformer_auto_wrap_policy
 from torchvision.transforms import Compose, Resize
 
 from prismatic.models.backbones.vision.base_vision import ImageTransform, LetterboxPad, VisionBackbone, unpack_tuple
@@ -135,6 +134,9 @@ class DinoSigLIPViTBackbone(VisionBackbone):
 
     def get_fsdp_wrapping_policy(self) -> Callable:
         """Return a simple FSDP policy that wraps each ViT block and then both of the _entire_ featurizers."""
+        # Lazy: NVIDIA's Jetson torch wheel omits torch.distributed.
+        from torch.distributed.fsdp.wrap import _module_wrap_policy, _or_policy, transformer_auto_wrap_policy
+
         vit_wrap_policy = partial(_module_wrap_policy, module_classes={VisionTransformer})
         transformer_block_policy = partial(transformer_auto_wrap_policy, transformer_layer_cls={Block})
         return partial(_or_policy, policies=[vit_wrap_policy, transformer_block_policy])

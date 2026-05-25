@@ -24,7 +24,7 @@ model:
   #   omnivla-finetuned-cast    (loader stub)
   # If the weights aren't on disk yet, startup prints the exact
   # `git clone https://huggingface.co/NHirose/<name> ...` command.
-  name: omnivla-edge
+  name: omnivla-original
 
   device: cuda:0
 

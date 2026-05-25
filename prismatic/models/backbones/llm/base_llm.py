@@ -19,7 +19,6 @@ from typing import Callable, List, Optional, Sequence, Type
 
 import torch
 import torch.nn as nn
-from torch.distributed.fsdp.wrap import transformer_auto_wrap_policy
 from transformers import AutoConfig, AutoTokenizer, PreTrainedModel, PreTrainedTokenizerBase
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
@@ -181,6 +180,9 @@ class HFCausalLLMBackbone(LLMBackbone, ABC):
 
     def get_fsdp_wrapping_policy(self) -> Callable:
         """Return a `transformer_auto_wrap_policy` where we wrap each instance of `self.transformer_layer_cls`"""
+        # Lazy: NVIDIA's Jetson torch wheel omits torch.distributed, so eager import breaks edge inference.
+        from torch.distributed.fsdp.wrap import transformer_auto_wrap_policy
+
         transformer_block_policy = partial(
             transformer_auto_wrap_policy, transformer_layer_cls={self.transformer_layer_cls}
         )
