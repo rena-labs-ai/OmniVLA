@@ -22,7 +22,7 @@ import torch
 from PIL import Image
 
 from .messages import NavVlaRequest, NavVlaResponse
-from .model import OmniVlaModel
+from .model import OmniVlaModelProto
 
 # Same flat imports as model.py — the helpers live in inference/.
 _OMNIVLA_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -57,7 +57,7 @@ def _clip_angle(angle: float) -> float:
 class NavVlaHandler:
     """Stateless handler. Construct once with a loaded model + config."""
 
-    def __init__(self, model: OmniVlaModel, cfg: HandlerConfig | None = None) -> None:
+    def __init__(self, model: OmniVlaModelProto, cfg: HandlerConfig | None = None) -> None:
         self._model = model
         self._cfg = cfg or HandlerConfig()
         # Plain unit masks — fisheye-specific masking can be plugged in here

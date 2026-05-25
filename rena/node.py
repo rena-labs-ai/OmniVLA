@@ -23,7 +23,7 @@ from PIL import Image as PILImage
 
 from .handler import HandlerConfig, NavVlaHandler
 from .messages import NavVlaRequest, NavVlaResponse
-from .model import ModelConfig, OmniVlaModel
+from .model import ModelConfig, build_model
 from .server import Server
 from .transport import HttpServerTransport, RosServerTransport, ServerTransport
 
@@ -37,25 +37,20 @@ _DEFAULT_CONFIG = os.path.join(_PKG_DIR, "config.yaml")
 def _load_config(path: str) -> dict:
     with open(path) as f:
         cfg = yaml.safe_load(f) or {}
-    if "model" not in cfg or "weights_path" not in cfg["model"]:
-        raise ValueError(f"config {path!r} missing required 'model.weights_path'")
+    if "model" not in cfg or "name" not in cfg["model"]:
+        raise ValueError(f"config {path!r} missing required 'model.name'")
     return cfg
 
 
-def _resolve_weights_path(weights_path: str) -> str:
-    if os.path.isabs(weights_path):
-        return weights_path
-    return os.path.join(_OMNIVLA_ROOT, weights_path)
-
-
 def _build_handler(cfg: dict) -> NavVlaHandler:
+    model_block = cfg["model"]
     model_cfg = ModelConfig(
-        weights_path=_resolve_weights_path(cfg["model"]["weights_path"]),
-        device=cfg["model"].get("device", "cuda:0"),
+        name=model_block["name"],
+        device=model_block.get("device", "cuda:0"),
     )
     handler_cfg = HandlerConfig(**cfg.get("handler", {}))
-    print(f"Loading OmniVLA-edge weights from {model_cfg.weights_path}")
-    model = OmniVlaModel(model_cfg)
+    print(f"Loading {model_cfg.name}")
+    model = build_model(model_cfg)
     return NavVlaHandler(model, handler_cfg)
 
 

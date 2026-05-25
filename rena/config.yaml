@@ -16,8 +16,16 @@ transport:
     port: 8777
 
 model:
-  # Absolute path, OR relative to the OmniVLA repo root.
-  weights_path: omnivla-edge/omnivla-edge.pth
+  # Checkpoint name. Doubles as the HF repo (NHirose/<name>) and the directory
+  # under the OmniVLA repo root. One of:
+  #   omnivla-edge              (implemented)
+  #   omnivla-original          (loader stub)
+  #   omnivla-original-balance  (loader stub)
+  #   omnivla-finetuned-cast    (loader stub)
+  # If the weights aren't on disk yet, startup prints the exact
+  # `git clone https://huggingface.co/NHirose/<name> ...` command.
+  name: omnivla-edge
+
   device: cuda:0
 
 handler:
