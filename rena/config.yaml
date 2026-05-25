@@ -1,0 +1,41 @@
+# OmniVLA edge server config.
+#
+# Loaded by `rena/node.py` on startup. Override the path with
+#   python -m rena.node --ros-args -p config_path:=/path/to/your.yaml
+#
+# The handler defaults below mirror nav2's MPPI controller settings in
+# `rena_navigation/config/nav2_camera.yaml` (vx_max=0.35, wz_max=0.4,
+# controller_frequency=5). Tune from here without code changes / rebuilds.
+
+transport:
+  type: http          # ros | http
+  ros:
+    service_name: /vla/predict
+  http:
+    host: 0.0.0.0
+    port: 8777
+
+model:
+  # Absolute path, OR relative to the OmniVLA repo root.
+  weights_path: omnivla-edge/omnivla-edge.pth
+  device: cuda:0
+
+handler:
+  # Note: modality_id (pose-only / pose+image / image+language / ...) is *per
+  # request*, not a boot-time setting. The client chooses it based on what
+  # inputs are provided — e.g. `rena nav go --image-goal-path <path>` flips
+  # modality to 5 (pose+image) automatically. No server change needed.
+
+  # Trajectory horizon settings (model-specific — change only if you retrain).
+  metric_waypoint_spacing: 0.1   # meters per "spacing unit" in the model output.
+
+  # Which of the 8 predicted waypoints drives cmd_vel.
+  # 0 = immediate next; 7 = farthest. Lower = more reactive to close goals.
+  waypoint_select: 4
+
+  # Control rate. Should match the client tick_hz (nav_vla_client).
+  control_dt_s: 0.3333           # 1 / 3 Hz
+
+  # Velocity caps (m/s, rad/s). Nav2's MPPI for this robot uses 0.35 / 0.4.
+  max_linear: 0.35
+  max_angular: 0.4
